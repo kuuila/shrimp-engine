@@ -1,0 +1,249 @@
+# 虾女团 - 10 分身子虾 Docker Compose 配置
+# 每个 Agent 独立容器，独立配置
+
+version: '3.8'
+
+services:
+  # ========== 01 情报员 ==========
+  scout:
+    image: shrimp-daemon:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-scout
+    hostname: scout
+    environment:
+      - AGENT_NAME=scout
+      - AGENT_TYPE=scout
+    volumes:
+      - ./configs:/app/configs:ro
+      - scout_workspace:/app/workspace
+      - scout_memory:/app/memory
+      - ./logs/scout:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  # ========== 02 撰稿人 ==========
+  writer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-writer
+    hostname: writer
+    environment:
+      - AGENT_NAME=writer
+      - AGENT_TYPE=writer
+    volumes:
+      - ./configs:/app/configs:ro
+      - writer_workspace:/app/workspace
+      - writer_memory:/app/memory
+      - ./logs/writer:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    depends_on:
+      - commander
+
+  # ========== 03 美术官 ==========
+  artist:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-artist
+    hostname: artist
+    environment:
+      - AGENT_NAME=artist
+      - AGENT_TYPE=artist
+    volumes:
+      - ./configs:/app/configs:ro
+      - artist_workspace:/app/workspace
+      - artist_memory:/app/memory
+      - ./logs/artist:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    depends_on:
+      - commander
+
+  # ========== 04 宣教士 ==========
+  evangelist:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-evangelist
+    hostname: evangelist
+    environment:
+      - AGENT_NAME=evangelist
+      - AGENT_TYPE=evangelist
+    volumes:
+      - ./configs:/app/configs:ro
+      - evangelist_workspace:/app/workspace
+      - evangelist_memory:/app/memory
+      - ./logs/evangelist:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    ports:
+      - "8001:8080"  # 宣教士对外端口
+    depends_on:
+      - writer
+      - artist
+
+  # ========== 05 互动员 ==========
+  interactor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-interactor
+    hostname: interactor
+    environment:
+      - AGENT_NAME=interactor
+      - AGENT_TYPE=interactor
+    volumes:
+      - ./configs:/app/configs:ro
+      - interactor_workspace:/app/workspace
+      - interactor_memory:/app/memory
+      - ./logs/interactor:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+
+  # ========== 06 数据官 ==========
+  analyst:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-analyst
+    hostname: analyst
+    environment:
+      - AGENT_NAME=analyst
+      - AGENT_TYPE=analyst
+    volumes:
+      - ./configs:/app/configs:ro
+      - analyst_workspace:/app/workspace
+      - analyst_memory:/app/memory
+      - ./logs/analyst:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    depends_on:
+      - statistician
+
+  # ========== 07 防火墙 ==========
+  firewall:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-firewall
+    hostname: firewall
+    environment:
+      - AGENT_NAME=firewall
+      - AGENT_TYPE=firewall
+    volumes:
+      - ./configs:/app/configs:ro
+      - firewall_workspace:/app/workspace
+      - firewall_memory:/app/memory
+      - ./logs/firewall:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+
+  # ========== 08 时间官 ==========
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-scheduler
+    hostname: scheduler
+    environment:
+      - AGENT_NAME=scheduler
+      - AGENT_TYPE=scheduler
+    volumes:
+      - ./configs:/app/configs:ro
+      - scheduler_workspace:/app/workspace
+      - scheduler_memory:/app/memory
+      - ./logs/scheduler:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+
+  # ========== 09 统计员 ==========
+  statistician:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-statistician
+    hostname: statistician
+    environment:
+      - AGENT_NAME=statistician
+      - AGENT_TYPE=statistician
+    volumes:
+      - ./configs:/app/configs:ro
+      - statistician_workspace:/app/workspace
+      - statistician_memory:/app/memory
+      - ./logs/statistician:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+
+  # ========== 10 指挥官 ==========
+  commander:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-commander
+    hostname: commander
+    environment:
+      - AGENT_NAME=commander
+      - AGENT_TYPE=commander
+    volumes:
+      - ./configs:/app/configs:ro
+      - commander_workspace:/app/workspace
+      - commander_memory:/app/memory
+      - ./logs/commander:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # 管理其他容器
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    ports:
+      - "8080:8080"  # 主控面板
+    command: >
+      sh -c "echo '🎯 虾女团指挥官启动' && /app/shrimp_daemon -d"
+
+# ========== 卷定义 ==========
+volumes:
+  scout_workspace:
+  scout_memory:
+  writer_workspace:
+  writer_memory:
+  artist_workspace:
+  artist_memory:
+  evangelist_workspace:
+  evangelist_memory:
+  interactor_workspace:
+  interactor_memory:
+  analyst_workspace:
+  analyst_memory:
+  firewall_workspace:
+  firewall_memory:
+  scheduler_workspace:
+  scheduler_memory:
+  statistician_workspace:
+  statistician_memory:
+  commander_workspace:
+  commander_memory:
+
+# ========== 网络定义 ==========
+networks:
+  shrimp_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

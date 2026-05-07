@@ -1,0 +1,15 @@
+{
+  "name": "shrimp-ai",
+  "version": "1.0.0",
+  "description": "虾智能体AI模块 - 10个虾人设的对话系统",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node -e \"const ai = require('./index'); console.log('加载成功'); console.log('人设:', ai.getAllPersonas());\""
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "uuid": "^9.0.1",
+    "cors": "^2.8.5"
+  }
+}

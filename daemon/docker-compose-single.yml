@@ -1,0 +1,33 @@
+# 虾女团 - 单一子虾测试版
+
+version: '3.8'
+
+services:
+  # ========== 01 情报员 (测试版) ==========
+  scout:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shrimp-scout
+    hostname: scout
+    environment:
+      - AGENT_NAME=scout
+      - AGENT_TYPE=scout
+    volumes:
+      - ./configs:/app/configs:ro
+      - scout_workspace:/app/workspace
+      - scout_memory:/app/memory
+      - ./logs/scout:/app/logs
+    restart: unless-stopped
+    networks:
+      - shrimp_net
+    ports:
+      - "8080:8080"
+
+volumes:
+  scout_workspace:
+  scout_memory:
+
+networks:
+  shrimp_net:
+    driver: bridge
